@@ -60,6 +60,17 @@ def analyze_and_report(df):
     """Provide analysis and recommendations based on benchmark data"""
     print("=== BENCHMARK ANALYSIS REPORT ===")
     print()
+
+    if "device_model" in df.columns and "chip" in df.columns:
+        hosts = df["hostname"].dropna().unique() if "hostname" in df.columns else []
+        if len(hosts) <= 1:
+            row = df.iloc[0]
+            print(f"Hardware: {row.get('device_model', '?')} | {row.get('chip', '?')} | "
+                  f"{row.get('cpu_count', '?')} cores | {row.get('memory_gb', '?')} GB | "
+                  f"{row.get('os', '?')} {row.get('os_version', '')}")
+        else:
+            print(f"Hosts in this dataset: {', '.join(hosts)}")
+        print()
     
     # Performance by model
     print("Performance Ranking by Model (Avg Tokens/sec):")

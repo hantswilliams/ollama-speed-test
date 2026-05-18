@@ -18,6 +18,15 @@ def load_and_analyze_data(file_path):
     print(f"Loaded data from {file_path}")
     print(f"Shape: {df.shape}")
     print("\nColumns:", df.columns.tolist())
+
+    if "device_model" in df.columns and "chip" in df.columns:
+        row = df.iloc[0]
+        print("\n=== Hardware ===")
+        print(f"  Host:   {row.get('hostname', '?')}")
+        print(f"  Device: {row.get('device_model', '?')} ({row.get('chip', '?')})")
+        print(f"  CPU:    {row.get('cpu_count', '?')} cores")
+        print(f"  Memory: {row.get('memory_gb', '?')} GB")
+        print(f"  OS:     {row.get('os', '?')} {row.get('os_version', '')}")
     
     # Show basic statistics
     print("\n=== Basic Statistics ===")

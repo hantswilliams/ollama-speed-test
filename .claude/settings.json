@@ -6,7 +6,11 @@
       "Bash(curl -sf http://localhost:11435/api/tags)",
       "Bash(curl -sf http://localhost:3030)",
       "Bash(curl -sf http://localhost:11434/api/tags)",
-      "Bash(grep -InE \"\\(api[_-]?key|secret|token|password|bearer\\)[\\\\\"']?\\\\s*[:=]\\\\s*[\\\\\"'][^\\\\\"']{8,}\" --include=\"*.py\" --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.json\" --include=\"*.md\" -r .)"
+      "Bash(grep -InE \"\\(api[_-]?key|secret|token|password|bearer\\)[\\\\\"']?\\\\s*[:=]\\\\s*[\\\\\"'][^\\\\\"']{8,}\" --include=\"*.py\" --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.json\" --include=\"*.md\" -r .)",
+      "Bash(.venv/bin/python -m py_compile test.py scripts/visualize.py scripts/enhanced_visualize.py scripts/create_charts.py)",
+      "Bash(.venv/bin/python -c ' *)",
+      "Bash(system_profiler SPHardwareDataType -json)",
+      "Bash(python3 -m json.tool)"
     ]
   }
 }
