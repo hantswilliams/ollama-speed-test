@@ -1,0 +1,2 @@
+model,avg_output_tps,min_output_tps,max_output_tps,avg_prompt_tps,avg_total_duration_sec,avg_load_duration_sec,avg_wall_time_sec,avg_output_tokens
+qwen3.5:35b-a3b,27.42028823673822,26.227070937663214,27.840817539860712,137.75003993612862,12.8637581246,1.4526606166,12.86850972175598,300.0

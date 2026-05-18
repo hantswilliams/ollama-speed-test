@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(if [ -f ~/.config/opencode/opencode.json ]; then echo \"EXISTS:\"; cat ~/.config/opencode/opencode.json; else echo \"no existing config — launcher will write a fresh one pointing at :11435\"; fi)",
+      "Read(//Users/hants/.config/opencode/**)",
+      "Bash(curl -sf http://localhost:11435/api/tags)",
+      "Bash(curl -sf http://localhost:3030)",
+      "Bash(curl -sf http://localhost:11434/api/tags)",
+      "Bash(grep -InE \"\\(api[_-]?key|secret|token|password|bearer\\)[\\\\\"']?\\\\s*[:=]\\\\s*[\\\\\"'][^\\\\\"']{8,}\" --include=\"*.py\" --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.json\" --include=\"*.md\" -r .)"
+    ]
+  }
+}
