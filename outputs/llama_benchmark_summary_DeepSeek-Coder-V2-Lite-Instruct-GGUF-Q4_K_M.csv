@@ -1,0 +1,3 @@
+model,category,avg_output_tps,min_output_tps,max_output_tps,avg_prompt_tps,avg_total_duration_sec,avg_load_duration_sec,avg_wall_time_sec,avg_output_tokens,hostname,os,os_version,cpu_count,device_model,chip,memory_gb,backend
+DeepSeek-Coder-V2-Lite-Instruct-GGUF:Q4_K_M,coding,120.0184904516676,117.6803785228602,121.27547846208141,208.81862478096315,2.5647794444444445,0.0,2.573883877860175,300.0,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0,llama-server
+DeepSeek-Coder-V2-Lite-Instruct-GGUF:Q4_K_M,general,120.65565485370708,119.46127742333175,121.56635821229376,170.71085336648767,2.516760833333333,0.0,2.52656888961792,300.0,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0,llama-server

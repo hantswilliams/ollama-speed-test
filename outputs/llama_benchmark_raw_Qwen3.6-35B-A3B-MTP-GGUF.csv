@@ -1,0 +1,16 @@
+backend,model,category,prompt_name,run,output_tokens,output_tps,prompt_tokens,prompt_tps,total_duration_sec,load_duration_sec,wall_time_sec,hostname,os,os_version,cpu_count,device_model,chip,memory_gb
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,coding,two_sum,1,300,38.150771084309774,47,154.47670195528065,8.16779,0.0,8.18357801437378,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,coding,two_sum,2,300,34.33350259750114,47,194.5460867261619,8.979409,0.0,9.00232481956482,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,coding,two_sum,3,300,33.51040978539711,47,187.4892792034498,9.203123,0.0,9.207696199417114,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,coding,binary_search_tree,1,300,33.481623443564885,36,100.84372583952403,9.317127,0.0,9.337000370025635,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,coding,binary_search_tree,2,300,35.84836285904077,36,159.12727529902668,8.594817,0.0,8.60850715637207,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,coding,binary_search_tree,3,300,35.30115295918975,36,148.3630608947941,8.740954,0.0,8.745666027069092,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,coding,refactor_loop,1,300,38.83419236724305,56,200.9256933730401,8.003861,0.0,8.008416175842285,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,coding,refactor_loop,2,300,38.88460294154244,56,205.92777818636463,7.987076,0.0,8.000283002853394,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,coding,refactor_loop,3,300,39.12279903283225,56,204.96978525754818,7.941374,0.0,7.944890022277832,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,general,data_storage,1,300,33.931143530433694,26,89.70187925437038,9.131283999999999,0.0,9.135972738265991,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,general,data_storage,2,300,32.271094404246014,26,102.30662081231456,9.550383000000002,0.0,9.563191175460815,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,general,data_storage,3,300,31.99562129257404,26,94.3968224577302,9.651716,0.0,9.655157089233398,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,general,rest_vs_graphql,1,300,36.14910784001851,20,79.95490543333561,8.549100999999999,0.0,8.552587985992432,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,general,rest_vs_graphql,2,300,34.00737846754818,20,83.58932564311537,9.06088,0.0,9.072332859039307,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0
+llama-server,Qwen3.6-35B-A3B-MTP-GGUF,general,rest_vs_graphql,3,300,35.0218904326149,20,76.93964853968546,8.826015,0.0,8.829657077789307,Mac,Darwin,26.4.1,18,"MacBook Pro (Mac17,9)",Apple M5 Pro,64.0

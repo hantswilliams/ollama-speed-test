@@ -26,6 +26,9 @@ services/*/models/
 # Logs
 *.log
 
+# Regenerated HTML summary (run `python scripts/summarize_html.py` to rebuild)
+outputs/summary.html
+
 # Secrets / local env
 .env
 .env.local
