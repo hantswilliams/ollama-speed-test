@@ -1,73 +1,82 @@
-# Ollama Speed Test
+# Ollama / Llama-server Speed Test
 
-This repository contains scripts for benchmarking Ollama models across different coding and general prompts.
+Benchmark local LLM inference across two runtimes — **Ollama** and **llama.cpp's `llama-server`** — on the same prompts, same hardware, same output schema, so the numbers compare apples-to-apples.
 
 ## Repository Structure
 
-- `test.py`: Main benchmarking script
-- `outputs/`: Directory for storing benchmark results (CSV files)
-- `scripts/`: Directory for accessory tools
-  - `scripts/visualize.py`: Analysis script for benchmark results  
-  - `scripts/enhanced_visualize.py`: Enhanced visualization and analysis tool
+- `test_ollama.py` — benchmarks Ollama models (talks to `localhost:11434` or the dashboard proxy on `:11435`)
+- `test_llama.py` — benchmarks a running llama-server instance (default `localhost:8080`)
+- `outputs/` — CSV results per run, plus `benchmarks.db` SQLite store that accumulates every run across both backends and across devices
+- `scripts/` — visualization helpers
+  - `scripts/visualize.py` — text analysis of a CSV
+  - `scripts/enhanced_visualize.py` — fuller report including device info
+  - `scripts/create_charts.py` — saves matplotlib charts; auto-facets by host when multiple devices are in the data
+- `dashboard/` — Next.js + FastAPI proxy that captures Ollama traffic live (see [dashboard/README.md](dashboard/README.md))
+- `services/privacy_filter/` — OpenAI Privacy Filter local install + tests (separate concern, see [services/privacy_filter/README.md](services/privacy_filter/README.md))
+- `launch_opencode_local.py` — launch OpenCode against a local Ollama model
+- `launch_ollama_service.py` — expose Ollama on the LAN (see [LAN_SHARING.md](LAN_SHARING.md))
 
-## How to Run Tests
+## How to Run
+
+### Ollama benchmarks
 
 ```bash
-# Run with default models
-python3 test.py
+# Default models
+python3 test_ollama.py
 
-# Run with custom models
-python3 test.py --models "qwen3-coder:30b-a3b-q4_K_M" "gemma4:e4b"
+# Specific models
+python3 test_ollama.py --models "qwen3-coder:30b-a3b-q4_K_M" "gemma4:e4b"
 
-# Run with suffix for output files
-python3 test.py --suffix "mytest"
+# Tagged output files
+python3 test_ollama.py --suffix "mytest"
 ```
 
-## Benchmark Results
+### llama-server benchmarks
 
-The test runs three repetitions per prompt for each model and outputs:
-1. Raw results (detailed metrics per run)
-2. Summary statistics (averages, min/max values)
+Start `llama-server` separately first. Examples:
 
-Results are saved in CSV format in the `outputs/` directory.
-
-## Visualization Capabilities
-
-While the core benchmark script generates data files, this repository is designed to support visual analysis of performance metrics.
-
-### Analysis Tools
-
-- `scripts/visualize.py`: Provides command-line analysis of benchmark results
-- `scripts/enhanced_visualize.py`: Enhanced analysis with visualization guidance
-
-### Potential Visualizations
-
-The following visualizations can be created with additional packages (matplotlib, seaborn, plotly):
-
-1. **Performance Comparison Bar Charts**
-   - Average output tokens/sec per model (grouped by coding vs general)
-   - Performance distribution across models
-
-2. **Interactive Dashboard Components** 
-   - Model comparison heatmaps
-   - Performance metrics correlation plots
-   - Duration breakdown charts
-
-3. **Key Metrics Visualizations**
-   - TPS vs token count scatter plots
-   - Wall time vs model performance
-   - Load time vs model performance
-
-### To Create Visualizations
-
-1. Install required packages:
 ```bash
-pip install matplotlib seaborn plotly
+# Dense
+llama-server -hf ggml-org/Qwen3.6-27B-MTP-GGUF \
+    --spec-type draft-mtp --spec-draft-n-max 2
+
+# MoE
+llama-server -hf ggml-org/Qwen3.6-35B-A3B-MTP-GGUF \
+    --spec-type draft-mtp --spec-draft-n-max 3
 ```
 
-2. Run the analysis:
+Then in another terminal:
+
 ```bash
-python3 scripts/visualize.py outputs/ollama_benchmark_summary.csv
+# Auto-detects the loaded model via /v1/models
+python3 test_llama.py
+
+# Tagged output + custom label
+python3 test_llama.py --model-label "qwen3.6-35b-A3B-MTP" --suffix "mtp-spec3"
+
+# Custom URL or port
+python3 test_llama.py --url http://localhost:8081
 ```
 
-3. Use the visualization templates to create charts of your choice
+## Output
+
+Three formats per run:
+
+1. **Raw CSV** — every prompt × every run (15 rows per model, 3 runs × 5 prompts)
+2. **Summary CSV** — aggregated by model + category
+3. **`outputs/benchmarks.db`** — single SQLite store, append-only, both backends write here with a `backend` column. This is the right artifact for cross-run, cross-device, cross-backend comparison.
+
+All outputs include hardware columns (hostname, device model, chip, CPU count, memory, OS) so you can compare across machines once you copy the DB around.
+
+## Visualization
+
+```bash
+pip install matplotlib seaborn
+python3 scripts/create_charts.py outputs/ollama_benchmark_summary.csv
+```
+
+When a CSV contains multiple hosts (e.g. you merged data from two devices), `create_charts.py` automatically switches the hue dimension to hostname so the comparison is visible at a glance.
+
+## Live dashboard
+
+A FastAPI proxy + Next.js dashboard logs every Ollama request as it happens, with per-IP and per-model breakdowns. See [dashboard/README.md](dashboard/README.md). Not currently wired up for llama-server traffic.

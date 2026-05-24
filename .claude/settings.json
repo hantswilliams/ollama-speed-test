@@ -10,7 +10,17 @@
       "Bash(.venv/bin/python -m py_compile test.py scripts/visualize.py scripts/enhanced_visualize.py scripts/create_charts.py)",
       "Bash(.venv/bin/python -c ' *)",
       "Bash(system_profiler SPHardwareDataType -json)",
-      "Bash(python3 -m json.tool)"
+      "Bash(python3 -m json.tool)",
+      "Bash(gh auth *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(ls -la /Users/hants/Development/Python/ 2>&1 | head -30)",
+      "Read(//Users/hants/Development/Python/**)",
+      "Bash(mkdir -p /Users/hants/Development/Python/presidio-openai-redactor/src/presidio_openai_redactor /Users/hants/Development/Python/presidio-openai-redactor/scripts /Users/hants/Development/Python/presidio-openai-redactor/tests /Users/hants/Development/Python/presidio-openai-redactor/examples && ls /Users/hants/Development/Python/presidio-openai-redactor/)"
+    ],
+    "additionalDirectories": [
+      "/Users/hants/Development/Python/presidio-openai-redactor/src",
+      "/Users/hants/Development/Python/presidio-openai-redactor"
     ]
   }
 }

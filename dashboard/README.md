@@ -47,7 +47,7 @@ Open `http://localhost:3030`.
 The whole thing only collects data if your tools hit the proxy instead of Ollama directly.
 
 - **OpenCode** — in `~/.config/opencode/opencode.json`, set `provider.ollama.options.baseURL` to `http://localhost:11435/v1` instead of `http://localhost:11434/v1`.
-- **The benchmark script (`test.py`)** — change `OLLAMA_URL` to `http://localhost:11435/api/generate`.
+- **The benchmark script (`test_ollama.py`)** — `OLLAMA_URL` already points at `http://localhost:11435/api/generate`. (`test_llama.py` talks to llama-server on `:8080` directly and is not yet routed through this proxy.)
 - **Anything else** — replace `11434` with `11435` in the base URL.
 
 Direct hits to `11434` bypass logging by design (so you can A/B if needed).

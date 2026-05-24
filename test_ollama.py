@@ -85,6 +85,7 @@ def ensure_db() -> None:
                 batch_id TEXT NOT NULL,
                 batch_started_at TEXT NOT NULL,
                 suffix TEXT,
+                backend TEXT,
                 model TEXT NOT NULL,
                 category TEXT NOT NULL,
                 prompt_name TEXT NOT NULL,
@@ -105,8 +106,14 @@ def ensure_db() -> None:
                 os_version TEXT
             )
         """)
+        # Add backend column to any pre-existing DB created before this column existed
+        try:
+            conn.execute("ALTER TABLE benchmark_runs ADD COLUMN backend TEXT")
+        except sqlite3.OperationalError:
+            pass  # column already exists
         conn.execute("CREATE INDEX IF NOT EXISTS idx_runs_batch ON benchmark_runs(batch_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_runs_model ON benchmark_runs(model)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_runs_backend ON benchmark_runs(backend)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_runs_hostname ON benchmark_runs(hostname)")
 
 DEFAULT_MODELS = [
@@ -263,6 +270,7 @@ for model in models:
             )
 
             results.append({
+                "backend": "ollama",
                 "model": model,
                 "category": category,
                 "prompt_name": name,
@@ -305,6 +313,7 @@ summary = (
 # Hardware is constant for this run; carry it through the summary too
 for col, val in hardware.items():
     summary[col] = val
+summary["backend"] = "ollama"
 
 print("\nRaw results:")
 print(df)
@@ -325,7 +334,7 @@ db_rows = df.assign(
     batch_started_at=batch_started_at,
     suffix=args.suffix or None,
 )[[
-    "batch_id", "batch_started_at", "suffix",
+    "batch_id", "batch_started_at", "suffix", "backend",
     "model", "category", "prompt_name", "run",
     "output_tokens", "output_tps", "prompt_tokens", "prompt_tps",
     "total_duration_sec", "load_duration_sec", "wall_time_sec",

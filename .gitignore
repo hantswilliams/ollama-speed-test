@@ -14,6 +14,9 @@ next-env.d.ts
 # Dashboard runtime artifacts (SQLite DB + logs; regenerated on first run)
 dashboard/data/
 
+# Downloaded model weights (re-downloadable from HF, not source)
+services/*/models/
+
 # Claude Code local-only settings (personal permission allowlist)
 .claude/settings.local.json
 
@@ -22,3 +25,8 @@ dashboard/data/
 
 # Logs
 *.log
+
+# Secrets / local env
+.env
+.env.local
+.env.*.local
