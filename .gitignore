@@ -29,6 +29,9 @@ services/*/models/
 # Regenerated HTML summary (run `python scripts/summarize_html.py` to rebuild)
 outputs/summary.html
 
+# Cached model metadata (re-fetched on demand by summarize_html.py)
+outputs/model_meta.json
+
 # Secrets / local env
 .env
 .env.local

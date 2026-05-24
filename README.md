@@ -2,6 +2,56 @@
 
 Benchmark local LLM inference across two runtimes — **Ollama** and **llama.cpp's `llama-server`** — on the same prompts, same hardware, same output schema, so the numbers compare apples-to-apples.
 
+## TL;DR
+
+**Launch OpenCode against a local model — one command per option:**
+
+```bash
+# Fast path: llama-server + DeepSeek-Coder-V2-Lite Q4_K_M (~120 tok/s on M5 Pro)
+# Strength: pure code generation / explanation in chat. Weak/unreliable
+# at tool calls — pick this when you mostly want fast inline code answers.
+python launch_opencode_local.py --backend llama-server \
+    --hf bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF:Q4_K_M
+
+# Tool-capable on llama-server: Qwen3.6-35B-A3B-MTP with speculative decoding
+# (~35 tok/s on M5 Pro). MTP heads built into the GGUF accelerate generation;
+# the Qwen3 family supports function / tool calling natively, so opencode
+# can drive it as an agent. Largest of the three — strongest reasoning.
+python launch_opencode_local.py --backend llama-server \
+    --hf ggml-org/Qwen3.6-35B-A3B-MTP-GGUF \
+    --spec-type draft-mtp --spec-draft-n-max 3
+
+# Ollama path: qwen3-coder 30B-A3B (~50 tok/s, supports tool / function
+# calling natively. Easier model management — `ollama pull` once and it's
+# tracked, no manual GGUF wrangling.)
+python launch_opencode_local.py --model qwen3-coder:30b-a3b-q4_K_M
+```
+
+**Choosing between them:**
+
+| Pick | When | Throughput | Tool calls |
+|---|---|---|---|
+| **DeepSeek-Coder-V2-Lite** (llama-server) | Fast in-chat code answers, no agentic actions | ~120 tok/s | Unreliable |
+| **Qwen3.6-35B-A3B-MTP** (llama-server) | Agentic opencode + best quality, willing to manage GGUFs | ~35 tok/s | Yes (native) |
+| **qwen3-coder:30b-a3b** (Ollama) | Agentic opencode with easy model management | ~50 tok/s | Yes (native) |
+
+The script auto-starts the inference server if it isn't already running, writes the right `~/.config/opencode/opencode.json`, and opens a Terminal.app window running `opencode` in your current directory.
+
+**When you're done, shut the backends down:**
+
+```bash
+python launch_opencode_local.py --stop                    # kill llama-server
+python launch_opencode_local.py --stop --include-ollama   # also stop `ollama serve`
+```
+
+**Benchmark + view results:**
+
+```bash
+python test_llama.py --hf bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF:Q4_K_M
+python test_ollama.py --models "qwen3-coder:30b-a3b-q4_K_M"
+python scripts/summarize_html.py && open outputs/summary.html
+```
+
 ## Repository Structure
 
 - `test_ollama.py` — benchmarks Ollama models (talks to `localhost:11434` or the dashboard proxy on `:11435`)
@@ -103,12 +153,31 @@ When a CSV contains multiple hosts (e.g. you merged data from two devices), `cre
 For a quick browser-friendly overview that pulls from **everything** in `outputs/` — the SQLite DB plus older CSVs — run:
 
 ```bash
-python3 scripts/summarize_html.py
-# → outputs/summary.html
+python3 scripts/summarize_html.py             # fetch any missing model metadata, then render
+python3 scripts/summarize_html.py --no-fetch  # offline regenerate from cache only
 ```
 
-Single self-contained HTML file (no JS, no external assets): hero counts, summary table by backend/model/category, device breakdown, and per-model expandable per-prompt detail. Safe to re-run; it overwrites in place.
+Single self-contained HTML file (no JS, no external assets):
+
+- **Models reference table** — every unique model with clickable link (HuggingFace for llama-server rows, Ollama library for Ollama rows), architecture, parameter count, context window, file size (GB), and license.
+- **Summary by backend × model × category** — sorted by avg tok/s descending. Model names link out to their source pages.
+- **Devices** — per-host run counts and avg tok/s, useful when you merge DBs from multiple machines.
+- **Per-prompt detail** — collapsible `<details>` per (backend, model) with per-prompt timings and context size in the header.
+
+Per-model metadata (context, params, size, license) is fetched once per model — from the HuggingFace API for llama-server models, from `ollama show` locally for Ollama models — and cached in `outputs/model_meta.json`. Re-runs only fetch new or stale (>30 days) entries. Pass `--no-fetch` for fully-offline regeneration.
 
 ## Live dashboard
 
-A FastAPI proxy + Next.js dashboard logs every Ollama request as it happens, with per-IP and per-model breakdowns. See [dashboard/README.md](dashboard/README.md). Not currently wired up for llama-server traffic.
+A FastAPI proxy + Next.js dashboard logs Ollama requests as they happen, with per-IP and per-model breakdowns. See [dashboard/README.md](dashboard/README.md).
+
+By default `launch_opencode_local.py` (Ollama backend) connects opencode directly to Ollama, so the proxy doesn't see those requests. Pass `--via-proxy` to route through it for dashboard logging:
+
+```bash
+# Terminal 1 — start the proxy first (it's required when --via-proxy is on)
+cd dashboard/proxy && python main.py
+
+# Terminal 2
+python launch_opencode_local.py --model qwen3-coder:30b-a3b-q4_K_M --via-proxy
+```
+
+Not currently wired up for llama-server traffic.

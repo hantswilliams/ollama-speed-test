@@ -145,22 +145,29 @@ def detect_loaded_model(base_url: str) -> str:
     try:
         r = requests.get(f"{base_url}/v1/models", timeout=3)
         r.raise_for_status()
-        models = r.json().get("data", [])
-        if models:
-            raw = models[0].get("id", "")
-            # llama-server often returns a file path; trim to basename
-            return Path(raw).name or raw or "unknown"
-    except requests.RequestException:
-        pass
-    return "unknown"
+        body = r.json()
+    except (requests.RequestException, ValueError):
+        return "unknown"
+    # llama.cpp uses either "data" (OpenAI standard) or "models"
+    models = body.get("data") or body.get("models") or []
+    if not models:
+        return "unknown"
+    raw = models[0].get("id") or models[0].get("name") or ""
+    return Path(raw).name or raw or "unknown"
 
 
 def is_server_up(base_url: str, timeout: float = 2.0) -> bool:
+    """Stricter than a status check: verify the response shape so a generic
+    web server squatting on the port can't fool us."""
     try:
         r = requests.get(f"{base_url}/v1/models", timeout=timeout)
-        return r.status_code < 500
-    except requests.RequestException:
+        if r.status_code != 200:
+            return False
+        body = r.json()
+    except (requests.RequestException, ValueError):
         return False
+    models = body.get("data") or body.get("models") or []
+    return isinstance(models, list) and len(models) > 0
 
 
 def port_from_url(url: str) -> int:
@@ -243,7 +250,12 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawDescriptionHelpFormatter,
     epilog=__doc__,
 )
-parser.add_argument("--url", default="http://localhost:8080", help="llama-server base URL.")
+parser.add_argument(
+    "--url",
+    default="http://127.0.0.1:8080",
+    help="llama-server base URL. Defaults to 127.0.0.1 (not localhost) to "
+         "dodge macOS IPv6 routing if another service binds *:8080.",
+)
 parser.add_argument(
     "--model-label",
     default=None,
@@ -333,7 +345,9 @@ else:
         )
 
 try:
-    model_label = args.model_label or detect_loaded_model(base_url)
+    # Prefer the --hf arg (preserves org/repo for downstream HF API lookups)
+    # over /v1/models (which only returns the repo basename + quant).
+    model_label = args.model_label or args.hf or detect_loaded_model(base_url)
     print(f"llama-server: {base_url}")
     print(f"Model: {model_label}")
 
