@@ -115,21 +115,45 @@ def preload_model(model: str) -> None:
     print("  model resident.")
 
 
+# Keys we own and will overwrite when writing config. Any other top-level keys
+# present in the existing file (e.g. "mcp", "theme", "autoshare", "instructions")
+# are preserved across backend switches so user-added settings don't get wiped.
+_MANAGED_OPENCODE_KEYS = {"$schema", "model", "provider"}
+
+
 def _write_opencode_config(config: dict, label: str) -> None:
-    """Atomic-ish: back up any existing config that differs, then write the new one."""
+    """Merge our managed keys into the existing config (if any), preserving
+    user-added top-level settings like `mcp`. Back up the prior file if changed."""
     OPENCODE_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-    new_text = json.dumps(config, indent=2)
+    existing_text = ""
+    existing_obj = {}
     if OPENCODE_CONFIG.exists():
-        existing = OPENCODE_CONFIG.read_text()
-        if existing.strip() == new_text.strip():
-            print(f"OpenCode config already matches ({label}); leaving as-is.")
-            return
+        existing_text = OPENCODE_CONFIG.read_text()
+        try:
+            existing_obj = json.loads(existing_text)
+            if not isinstance(existing_obj, dict):
+                existing_obj = {}
+        except json.JSONDecodeError:
+            print(f"  warning: existing {OPENCODE_CONFIG.name} is not valid JSON — treating as empty")
+            existing_obj = {}
+
+    merged = dict(existing_obj)
+    for key in _MANAGED_OPENCODE_KEYS:
+        if key in config:
+            merged[key] = config[key]
+    preserved = sorted(k for k in existing_obj if k not in _MANAGED_OPENCODE_KEYS)
+    new_text = json.dumps(merged, indent=2)
+    if existing_text.strip() == new_text.strip():
+        print(f"OpenCode config already matches ({label}); leaving as-is.")
+        return
+    if existing_text:
         stamp = datetime.now().strftime("%Y%m%dT%H%M%S")
         backup = OPENCODE_CONFIG.with_name(f"opencode.json.bak.{stamp}")
-        backup.write_text(existing)
+        backup.write_text(existing_text)
         print(f"Backed up existing OpenCode config to {backup}")
     OPENCODE_CONFIG.write_text(new_text)
-    print(f"Wrote OpenCode config ({label}) to {OPENCODE_CONFIG}")
+    note = f" (preserved user keys: {', '.join(preserved)})" if preserved else ""
+    print(f"Wrote OpenCode config ({label}) to {OPENCODE_CONFIG}{note}")
 
 
 def ensure_opencode_config(model: str, via_proxy: bool) -> None:

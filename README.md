@@ -7,33 +7,39 @@ Benchmark local LLM inference across two runtimes — **Ollama** and **llama.cpp
 **Launch OpenCode against a local model — one command per option:**
 
 ```bash
-# Fast path: llama-server + DeepSeek-Coder-V2-Lite Q4_K_M (~120 tok/s on M5 Pro)
-# Strength: pure code generation / explanation in chat. Weak/unreliable
-# at tool calls — pick this when you mostly want fast inline code answers.
-python launch_opencode_local.py --backend llama-server \
-    --hf bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF:Q4_K_M
-
-# Tool-capable on llama-server: Qwen3.6-35B-A3B-MTP with speculative decoding
-# (~35 tok/s on M5 Pro). MTP heads built into the GGUF accelerate generation;
-# the Qwen3 family supports function / tool calling natively, so opencode
-# can drive it as an agent. Largest of the three — strongest reasoning.
+# RECOMMENDED for serious agentic work: llama-server + Qwen3.6-35B-A3B-MTP
+# (~35 tok/s on M5 Pro). Largest of the three (35B-A3B MoE), MTP heads
+# built into the GGUF accelerate generation, and tool calling via MCP is
+# confirmed working in opencode (tested end-to-end with brain MCP).
 python launch_opencode_local.py --backend llama-server \
     --hf ggml-org/Qwen3.6-35B-A3B-MTP-GGUF \
     --spec-type draft-mtp --spec-draft-n-max 3
+
+# Fastest in-chat code path: llama-server + DeepSeek-Coder-V2-Lite Q4_K_M
+# (~120 tok/s on M5 Pro). Pure code generation / explanation. Tool calling
+# is weak/unreliable — pick this when you mostly want fast inline answers
+# and don't need opencode to actually run commands or edit files.
+python launch_opencode_local.py --backend llama-server \
+    --hf bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF:Q4_K_M
 
 # Ollama path: qwen3-coder 30B-A3B (~50 tok/s, supports tool / function
 # calling natively. Easier model management — `ollama pull` once and it's
 # tracked, no manual GGUF wrangling.)
 python launch_opencode_local.py --model qwen3-coder:30b-a3b-q4_K_M
+
+# or if somewhere else after activating the virtual env:
+python /Users/hants/Development/Python/ollama-llama-speed-test/launch_opencode_local.py --model qwen3-coder:30b-a3b-q4_K_M
 ```
 
 **Choosing between them:**
 
 | Pick | When | Throughput | Tool calls |
 |---|---|---|---|
+| **Qwen3.6-35B-A3B-MTP** (llama-server) | **Default for agentic opencode work** — strongest reasoning, MCP-verified | ~35 tok/s | Yes (verified with MCP) |
 | **DeepSeek-Coder-V2-Lite** (llama-server) | Fast in-chat code answers, no agentic actions | ~120 tok/s | Unreliable |
-| **Qwen3.6-35B-A3B-MTP** (llama-server) | Agentic opencode + best quality, willing to manage GGUFs | ~35 tok/s | Yes (native) |
-| **qwen3-coder:30b-a3b** (Ollama) | Agentic opencode with easy model management | ~50 tok/s | Yes (native) |
+| **qwen3-coder:30b-a3b** (Ollama) | Agentic opencode with easy model management (no GGUF wrangling) | ~50 tok/s | Yes (native) |
+
+> Tool-calling note: "MCP-verified" means we've end-to-end-tested it with a real MCP server in opencode (brain MCP, `brain_wiki_stats` call returned correct data). "Native" means the model family officially supports function calling but we haven't run a specific MCP test against this exact build. "Unreliable" means the model emits malformed tool calls or ignores tools in agentic flows.
 
 The script auto-starts the inference server if it isn't already running, writes the right `~/.config/opencode/opencode.json`, and opens a Terminal.app window running `opencode` in your current directory.
 
@@ -42,6 +48,14 @@ The script auto-starts the inference server if it isn't already running, writes 
 ```bash
 python launch_opencode_local.py --stop                    # kill llama-server
 python launch_opencode_local.py --stop --include-ollama   # also stop `ollama serve`
+```
+
+**Switching models or RAM feels bloated?** Standalone reset tool — runs from anywhere, no project deps:
+
+```bash
+python services/llm_cleanup/cleanup.py                 # kill llama-server + evict Ollama models, show delta
+python services/llm_cleanup/cleanup.py --include-ollama --purge   # full reset incl. macOS file cache
+python services/llm_cleanup/cleanup.py --dry-run       # preview without changes
 ```
 
 **Benchmark + view results:**
@@ -64,6 +78,7 @@ python scripts/summarize_html.py && open outputs/summary.html
   - `scripts/summarize_html.py` — generates `outputs/summary.html` from the DB + all CSVs in `outputs/`
 - `dashboard/` — Next.js + FastAPI proxy that captures Ollama traffic live (see [dashboard/README.md](dashboard/README.md))
 - `services/privacy_filter/` — OpenAI Privacy Filter local install + tests (separate concern, see [services/privacy_filter/README.md](services/privacy_filter/README.md))
+- `services/llm_cleanup/` — standalone "free up local RAM" tool: kills llama-server, evicts Ollama-loaded models, reports the delta. Run any time, no project deps (see [services/llm_cleanup/README.md](services/llm_cleanup/README.md))
 - `launch_opencode_local.py` — launch OpenCode against a local model (Ollama by default; `--backend llama-server --hf <repo>` for llama.cpp)
 - `launch_ollama_service.py` — expose Ollama on the LAN (see [LAN_SHARING.md](LAN_SHARING.md))
 
