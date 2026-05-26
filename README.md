@@ -10,7 +10,7 @@ Benchmark local LLM inference across two runtimes — **Ollama** and **llama.cpp
 # RECOMMENDED for serious agentic work: llama-server + Qwen3.6-35B-A3B-MTP
 # (~35 tok/s on M5 Pro). Largest of the three (35B-A3B MoE), MTP heads
 # built into the GGUF accelerate generation, and tool calling via MCP is
-# confirmed working in opencode (tested end-to-end with brain MCP).
+# confirmed working in opencode (tested end-to-end with a local MCP server).
 python launch_opencode_local.py --backend llama-server \
     --hf ggml-org/Qwen3.6-35B-A3B-MTP-GGUF \
     --spec-type draft-mtp --spec-draft-n-max 3
@@ -39,7 +39,7 @@ python /Users/hants/Development/Python/ollama-llama-speed-test/launch_opencode_l
 | **DeepSeek-Coder-V2-Lite** (llama-server) | Fast in-chat code answers, no agentic actions | ~120 tok/s | Unreliable |
 | **qwen3-coder:30b-a3b** (Ollama) | Agentic opencode with easy model management (no GGUF wrangling) | ~50 tok/s | Yes (native) |
 
-> Tool-calling note: "MCP-verified" means we've end-to-end-tested it with a real MCP server in opencode (brain MCP, `brain_wiki_stats` call returned correct data). "Native" means the model family officially supports function calling but we haven't run a specific MCP test against this exact build. "Unreliable" means the model emits malformed tool calls or ignores tools in agentic flows.
+> Tool-calling note: "MCP-verified" means we've end-to-end-tested it with a real MCP server in opencode (the model correctly invoked an MCP tool and returned its result). "Native" means the model family officially supports function calling but we haven't run a specific MCP test against this exact build. "Unreliable" means the model emits malformed tool calls or ignores tools in agentic flows.
 
 The script auto-starts the inference server if it isn't already running, writes the right `~/.config/opencode/opencode.json`, and opens a Terminal.app window running `opencode` in your current directory.
 
